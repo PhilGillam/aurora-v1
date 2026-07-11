@@ -1,0 +1,5 @@
+node_modules/
+.tldr/
+.devin/config.local.json
+.env
+*.log

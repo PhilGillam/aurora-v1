@@ -1,0 +1,14 @@
+[Unit]
+Description=Aurora Hardware Metrics Server
+After=network.target
+
+[Service]
+Type=simple
+User=pcrm
+WorkingDirectory=/projects/aurora-v1
+ExecStart=/usr/local/bin/node server/metrics.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Aurora HYTE Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+<div id="app">
+
+
+<header>
+
+    <div class="brand">
+        AURORA
+    </div>
+
+    <div class="subtitle">
+        NEURAL HARDWARE INTERFACE
+    </div>
+
+    <div id="clock">
+        --:--
+    </div>
+
+</header>
+
+
+
+<section class="card cpu-card">
+
+    <div class="title">
+        CPU
+    </div>
+
+
+    <div class="dual-gauge">
+
+
+        <div class="gauge">
+
+            <svg viewBox="0 0 120 120">
+
+                <circle
+                    class="ring-bg"
+                    cx="60"
+                    cy="60"
+                    r="50"/>
+
+                <circle
+                    id="cpu-load-ring"
+                    class="ring cpu"
+                    cx="60"
+                    cy="60"
+                    r="50"/>
+
+            </svg>
+
+
+            <div class="gauge-value">
+
+                <span id="cpu-load">
+                    0%
+                </span>
+
+                <small>
+                    LOAD
+                </small>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="gauge">
+
+            <svg viewBox="0 0 120 120">
+
+                <circle
+                    class="ring-bg"
+                    cx="60"
+                    cy="60"
+                    r="50"/>
+
+
+                <circle
+                    id="cpu-temp-ring"
+                    class="ring temp"
+                    cx="60"
+                    cy="60"
+                    r="50"/>
+
+            </svg>
+
+
+            <div class="gauge-value">
+
+                <span id="cpu-temp">
+                    0
+                </span>
+
+                <small>
+                    TEMP
+                </small>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="stat">
+
+        <span>
+            CLOCK
+        </span>
+
+        <strong id="cpu-speed">
+            0 GHz
+        </strong>
+
+    </div>
+
+
+    <div class="core-grid"
+         id="cpu-cores">
+
+    </div>
+
+
+</section>
+
+
+
+
+
+<section class="card gpu-card">
+
+
+<div class="title">
+GPU
+</div>
+
+
+
+<div class="dual-gauge">
+
+
+<div class="gauge">
+
+<svg viewBox="0 0 120 120">
+
+<circle
+class="ring-bg"
+cx="60"
+cy="60"
+r="50"/>
+
+
+<circle
+id="gpu-load-ring"
+class="ring gpu"
+cx="60"
+cy="60"
+r="50"/>
+
+</svg>
+
+
+<div class="gauge-value">
+
+<span id="gpu-load">
+0%
+</span>
+
+<small>
+LOAD
+</small>
+
+</div>
+
+</div>
+
+
+
+
+<div class="gauge">
+
+
+<svg viewBox="0 0 120 120">
+
+
+<circle
+class="ring-bg"
+cx="60"
+cy="60"
+r="50"/>
+
+
+<circle
+id="gpu-temp-ring"
+class="ring temp"
+cx="60"
+cy="60"
+r="50"/>
+
+
+</svg>
+
+
+
+<div class="gauge-value">
+
+<span id="gpu-temp">
+0
+</span>
+
+<small>
+TEMP
+</small>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="stat">
+
+<span>
+VRAM
+</span>
+
+<strong id="gpu-memory">
+--
+</strong>
+
+
+</div>
+
+
+<div class="stat">
+
+<span>
+MODEL
+</span>
+
+<strong id="gpu-model">
+--
+</strong>
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+<section class="card memory-card">
+
+
+<div class="title">
+MEMORY
+</div>
+
+
+<div class="gauge large">
+
+
+<svg viewBox="0 0 120 120">
+
+
+<circle
+class="ring-bg"
+cx="60"
+cy="60"
+r="50"/>
+
+
+<circle
+id="memory-ring"
+class="ring memory"
+cx="60"
+cy="60"
+r="50"/>
+
+
+</svg>
+
+
+<div class="gauge-value">
+
+<span id="memory-load">
+0%
+</span>
+
+<small>
+RAM
+</small>
+
+</div>
+
+
+</div>
+
+
+<div class="stat">
+
+<span>
+USED
+</span>
+
+<strong id="memory-used">
+--
+</strong>
+
+</div>
+
+
+<div class="stat">
+
+<span>
+TOTAL
+</span>
+
+<strong id="memory-total">
+--
+</strong>
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+<section class="card system-card">
+
+
+<div class="title">
+SYSTEM
+</div>
+
+
+<div class="stat">
+
+<span>
+DISK
+</span>
+
+<strong id="disk">
+--
+</strong>
+
+
+</div>
+
+
+
+<div class="stat">
+
+<span>
+NETWORK RX
+</span>
+
+<strong id="rx">
+--
+</strong>
+
+
+</div>
+
+
+
+<div class="stat">
+
+<span>
+NETWORK TX
+</span>
+
+<strong id="tx">
+--
+</strong>
+
+
+</div>
+
+
+
+<div class="stat">
+
+<span>
+UPTIME
+</span>
+
+<strong id="uptime">
+--
+</strong>
+
+
+</div>
+
+
+</section>
+
+<section class="nexus-ambient">
+
+    <div class="title">AMBIENT</div>
+
+    <div class="ambient-grid"></div>
+
+    <div class="ambient-hex">
+        <div class="hex-core"></div>
+    </div>
+
+</section>
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+
+</html>

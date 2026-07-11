@@ -1,0 +1,34 @@
+{
+  "name": "aurora-v1",
+  "version": "1.0.0",
+  "description": "Aurora hardware dashboard for HYTE display",
+  "main": "electron.js",
+  "type": "commonjs",
+
+  "scripts": {
+    "server": "node server.js",
+    "metrics": "node server/metrics.js",
+    "electron": "electron --no-sandbox .",
+    "start": "npm run electron"
+  },
+
+  "keywords": [
+    "electron",
+    "dashboard",
+    "hyte",
+    "hardware-monitor"
+  ],
+
+  "author": "Phil Gillam",
+  "license": "MIT",
+
+  "dependencies": {
+    "express": "^5.2.1",
+    "systeminformation": "^5.31.15",
+    "ws": "^8.21.0"
+  },
+
+  "devDependencies": {
+    "electron": "^43.1.0"
+  }
+}
