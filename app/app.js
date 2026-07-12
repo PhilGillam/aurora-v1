@@ -540,3 +540,62 @@ ws.onerror = err => {
 
 
 };
+
+//
+// Tubes of light
+//
+const tubesCanvas = document.getElementById("tubes");
+
+if (tubesCanvas) {
+    import("https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js")
+        .then(mod => {
+            const TubesCursor = mod.default;
+            const cursor = TubesCursor(tubesCanvas, {
+                bloom: {
+                    threshold: 0,
+                    strength: 1.5,
+                    radius: 0.5
+                },
+                tubes: {
+                    count: 24,
+                    colors: ["#f967fb", "#53bc28", "#6958d5"],
+                    noise: 0.25,
+                    lerp: 0.35,
+                    material: {
+                        metalness: 1,
+                        roughness: 0.25
+                    },
+                    lights: {
+                        intensity: 200,
+                        colors: ["#83f36e", "#fe8a2e", "#ff008a", "#60aed5"]
+                    }
+                },
+                sleepTimeScale1: 0.6,
+                sleepTimeScale2: 1.9
+            });
+
+            function fitTubes() {
+                cursor.options.sleepRadiusX = cursor.three.size.width / 2;
+                cursor.options.sleepRadiusY = cursor.three.size.height / 2;
+            }
+
+            fitTubes();
+            cursor.three.onAfterResize = fitTubes;
+
+            document.body.addEventListener("click", () => {
+                const colors = randomColors(3);
+                const lightsColors = randomColors(4);
+                cursor.tubes.setColors(colors);
+                cursor.tubes.setLightsColors(lightsColors);
+            });
+
+            function randomColors(count) {
+                return new Array(count)
+                    .fill(0)
+                    .map(() => "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0"));
+            }
+        })
+        .catch(err => {
+            console.error("Tubes cursor failed to load", err);
+        });
+}

@@ -20,10 +20,16 @@ function createWindow() {
 
     const displays = screen.getAllDisplays();
 
-
     const hyte = displays.find(display =>
-        display.bounds.height > display.bounds.width
-    ) || screen.getPrimaryDisplay();
+        display.label && /RTK|HYTE|Y70ti/i.test(display.label)
+    ) || displays
+        .map(display => ({
+            display,
+            area: display.bounds.width * display.bounds.height
+        }))
+        .sort((a, b) => a.area - b.area)[0]
+        .display
+    || screen.getPrimaryDisplay();
 
 
 
