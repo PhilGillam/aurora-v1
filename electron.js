@@ -46,7 +46,7 @@ function getXrandrBounds(outputName) {
             if (name !== outputName) continue;
 
             const geometry = tokens[tokens.length - 2];
-            const match = geometry.match(/(\d+)\/\d+x(\d+)\/\d+\+(\d+)\+(\d+)/);
+            const match = geometry.match(/(\d+)(?:\/\d+)?x(\d+)(?:\/\d+)?\+(\d+)\+(\d+)/);
 
             if (!match) continue;
 
