@@ -7,7 +7,8 @@ Wants=aurora-metrics.service
 Type=simple
 User=pcrm
 WorkingDirectory=/projects/aurora-v1
-Environment=DISPLAY=:0
+Environment=DISPLAY=:0.1
+Environment=HYTE_OUTPUT=DP-0
 ExecStart=/usr/local/bin/npm run electron
 Restart=always
 RestartSec=10

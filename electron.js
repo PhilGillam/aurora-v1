@@ -18,49 +18,56 @@ let powerBlockerId = null;
 
 
 const HYTE_OUTPUT = process.env.HYTE_OUTPUT || 'DP-0';
+const HYTE_ROTATION = process.env.HYTE_ROTATION || 'left';
+const HYTE_LABEL_RE = /HYTE|Y70ti|RTK/i;
 
 
-function getXrandrBounds(outputName) {
-
+function runXrandr(args) {
     try {
-
-        const out = execSync(
-            'xrandr --listactivemonitors',
+        return execSync(
+            'xrandr ' + args,
             {
                 encoding: 'utf8',
                 timeout: 3000,
                 env: { ...process.env, DISPLAY: process.env.DISPLAY || ':0' }
             }
         );
-
-        const lines = out.split('\n');
-
-        for (const line of lines) {
-
-            const tokens = line.trim().split(/\s+/);
-
-            if (tokens.length < 4) continue;
-
-            const name = tokens[tokens.length - 1];
-
-            if (name !== outputName) continue;
-
-            const geometry = tokens[tokens.length - 2];
-            const match = geometry.match(/(\d+)(?:\/\d+)?x(\d+)(?:\/\d+)?\+(\d+)\+(\d+)/);
-
-            if (!match) continue;
-
-            return {
-                x: parseInt(match[3], 10),
-                y: parseInt(match[4], 10),
-                width: parseInt(match[1], 10),
-                height: parseInt(match[2], 10)
-            };
-
-        }
-
     } catch (err) {
-        console.error('xrandr failed:', err);
+        console.error('xrandr failed:', err.message);
+        return null;
+    }
+}
+
+
+function getXrandrBounds(outputName) {
+
+    const out = runXrandr('--listactivemonitors');
+    if (!out) return null;
+
+    const lines = out.split('\n');
+
+    for (const line of lines) {
+
+        const tokens = line.trim().split(/\s+/);
+
+        if (tokens.length < 4) continue;
+
+        const name = tokens[tokens.length - 1];
+
+        if (name !== outputName) continue;
+
+        const geometry = tokens[tokens.length - 2];
+        const match = geometry.match(/(\d+)(?:\/\d+)?x(\d+)(?:\/\d+)?\+(\d+)\+(\d+)/);
+
+        if (!match) continue;
+
+        return {
+            x: parseInt(match[3], 10),
+            y: parseInt(match[4], 10),
+            width: parseInt(match[1], 10),
+            height: parseInt(match[2], 10)
+        };
+
     }
 
     return null;
@@ -68,28 +75,88 @@ function getXrandrBounds(outputName) {
 }
 
 
-function getHyteDisplay() {
+function getXrandrOutputNameForDisplay(display) {
 
-    const xrandrBounds = getXrandrBounds(HYTE_OUTPUT);
+    const out = runXrandr('--listactivemonitors');
+    if (!out) return null;
 
-    if (xrandrBounds) {
+    const lines = out.split('\n');
 
-        if (screen.screenToDipRect) {
-            return screen.screenToDipRect(null, xrandrBounds);
+    for (const line of lines) {
+
+        const tokens = line.trim().split(/\s+/);
+
+        if (tokens.length < 4) continue;
+
+        const name = tokens[tokens.length - 1];
+        const geometry = tokens[tokens.length - 2];
+        const match = geometry.match(/(\d+)(?:\/\d+)?x(\d+)(?:\/\d+)?\+(\d+)\+(\d+)/);
+
+        if (!match) continue;
+
+        const x = parseInt(match[3], 10);
+        const y = parseInt(match[4], 10);
+
+        if (
+            x === display.nativeOrigin.x &&
+            y === display.nativeOrigin.y
+        ) {
+            return name;
         }
-
-        return xrandrBounds;
 
     }
 
+    return null;
 
+}
+
+
+function rotateOutput(outputName, direction) {
+    if (!outputName || !direction || direction === 'none') return false;
+    const out = runXrandr(`--output ${outputName} --rotate ${direction}`);
+    return out !== null;
+}
+
+
+function findHyteDisplay() {
     const displays = screen.getAllDisplays();
-
-    const byLabel = displays.find(display =>
-        display.label && /RTK|HYTE|Y70ti/i.test(display.label)
+    return displays.find(display =>
+        display.label && HYTE_LABEL_RE.test(display.label)
     );
+}
 
-    if (byLabel) return byLabel.bounds;
+
+function getHyteDisplay() {
+
+    let hyte = findHyteDisplay();
+
+    // HYTE app is portrait; rotate a landscape HYTE output.
+    if (hyte && hyte.bounds.width > hyte.bounds.height) {
+        const outputName = getXrandrOutputNameForDisplay(hyte) || HYTE_OUTPUT;
+        console.log(`HYTE display is landscape, rotating ${outputName} ${HYTE_ROTATION}`);
+        rotateOutput(outputName, HYTE_ROTATION);
+        const displays = screen.getAllDisplays();
+        hyte = displays.find(display =>
+            display.label && HYTE_LABEL_RE.test(display.label)
+        );
+    }
+
+    if (hyte) {
+        return hyte.bounds;
+    }
+
+
+    // Fallback: use xrandr output name directly.
+    let xrandrBounds = getXrandrBounds(HYTE_OUTPUT);
+
+    if (xrandrBounds && xrandrBounds.width > xrandrBounds.height) {
+        rotateOutput(HYTE_OUTPUT, HYTE_ROTATION);
+        xrandrBounds = getXrandrBounds(HYTE_OUTPUT);
+    }
+
+    if (xrandrBounds) {
+        return xrandrBounds;
+    }
 
 
     return null;
@@ -102,7 +169,7 @@ function createWindow() {
     const hyte = getHyteDisplay();
 
     if (!hyte) {
-        console.error(`RTK HYTE Y70ti output ${HYTE_OUTPUT} not found; not starting app`);
+        console.error(`RTK HYTE Y70ti display not found on ${process.env.DISPLAY || ':0'}; not starting app`);
         app.quit();
         return;
     }
