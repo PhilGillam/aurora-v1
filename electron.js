@@ -18,7 +18,7 @@ let powerBlockerId = null;
 
 
 const HYTE_OUTPUT = process.env.HYTE_OUTPUT || 'DP-0';
-const HYTE_ROTATION = process.env.HYTE_ROTATION || 'left';
+const HYTE_ROTATION = process.env.HYTE_ROTATION || 'right';
 const HYTE_LABEL_RE = /HYTE|Y70ti|RTK/i;
 
 
@@ -118,6 +118,18 @@ function rotateOutput(outputName, direction) {
 }
 
 
+function rotationToDegrees(direction) {
+    return (
+        {
+            normal: 0,
+            left: 90,
+            inverted: 180,
+            right: 270
+        }[direction] || 0
+    );
+}
+
+
 function findHyteDisplay() {
     const displays = screen.getAllDisplays();
     return displays.find(display =>
@@ -130,10 +142,12 @@ function getHyteDisplay() {
 
     let hyte = findHyteDisplay();
 
-    // HYTE app is portrait; rotate a landscape HYTE output.
-    if (hyte && hyte.bounds.width > hyte.bounds.height) {
+    const targetRotation = rotationToDegrees(HYTE_ROTATION);
+
+    // Rotate the HYTE output until it matches the desired orientation.
+    if (hyte && hyte.rotation !== targetRotation) {
         const outputName = getXrandrOutputNameForDisplay(hyte) || HYTE_OUTPUT;
-        console.log(`HYTE display is landscape, rotating ${outputName} ${HYTE_ROTATION}`);
+        console.log(`HYTE display is ${hyte.rotation} degrees, rotating ${outputName} ${HYTE_ROTATION}`);
         rotateOutput(outputName, HYTE_ROTATION);
         const displays = screen.getAllDisplays();
         hyte = displays.find(display =>

@@ -8,7 +8,7 @@
   "scripts": {
     "server": "node server.js",
     "metrics": "node server/metrics.js",
-    "electron": "DISPLAY=:0.1 electron --no-sandbox .",
+    "electron": "DISPLAY=:0.1 HYTE_ROTATION=right electron --no-sandbox .",
     "start": "npm run electron"
   },
 
