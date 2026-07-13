@@ -13,6 +13,12 @@ app.commandLine.appendSwitch(
     '1'
 );
 
+// NVIDIA driver on this machine is mismatched, so Electron's GPU process fails.
+// SwiftShader gives us a working software WebGL context for the tubes.
+app.commandLine.appendSwitch(
+    'enable-unsafe-swiftshader'
+);
+
 
 let powerBlockerId = null;
 

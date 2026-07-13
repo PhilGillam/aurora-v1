@@ -19,6 +19,7 @@ async function getGpuInfo() {
 
                 if (err || !stdout) {
                     resolve({
+                        available: false,
                         utilization: 0,
                         temperature: 0,
                         memoryUsed: 0,
@@ -31,11 +32,12 @@ async function getGpuInfo() {
                 const parts = stdout.trim().split(',');
 
                 resolve({
-                    utilization: Number(parts[0]),
-                    temperature: Number(parts[1]),
-                    memoryUsed: Number(parts[2]),
-                    memoryTotal: Number(parts[3]),
-                    power: Number(parts[4])
+                    available: true,
+                    utilization: Number(parts[0]) || 0,
+                    temperature: Number(parts[1]) || 0,
+                    memoryUsed: Number(parts[2]) || 0,
+                    memoryTotal: Number(parts[3]) || 0,
+                    power: Number(parts[4]) || 0
                 });
             }
         );
@@ -96,18 +98,19 @@ async function collectMetrics() {
             vendor: graphics.controllers?.[0]?.vendor || "Unknown",
             model: graphics.controllers?.[0]?.model || "Unknown",
 
+            available: gpu.available,
             utilization: gpu.utilization,
             temperature: gpu.temperature,
 
             memoryUsed: gpu.memoryUsed,
-            memoryTotal: gpu.memoryTotal,
+            memoryTotal: gpu.memoryTotal || graphics.controllers?.[0]?.vram || 0,
 
             memoryPercent:
-                gpu.memoryTotal > 0
+                (gpu.memoryTotal || graphics.controllers?.[0]?.vram)
                     ? Number(
                         (
                             gpu.memoryUsed /
-                            gpu.memoryTotal *
+                            (gpu.memoryTotal || graphics.controllers?.[0]?.vram) *
                             100
                         ).toFixed(1)
                     )
