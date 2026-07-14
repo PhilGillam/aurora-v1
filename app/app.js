@@ -464,6 +464,17 @@ ws.onmessage = event => {
 
 
     //
+    // OS
+    //
+
+    document.getElementById(
+        "os"
+    ).textContent =
+
+        data.system.os;
+
+
+    //
     // Disk
     //
 

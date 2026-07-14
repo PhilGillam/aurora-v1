@@ -55,7 +55,8 @@ async function collectMetrics() {
         network,
         time,
         graphics,
-        gpu
+        gpu,
+        osInfo
     ] = await Promise.all([
         si.currentLoad(),
         si.mem(),
@@ -65,7 +66,8 @@ async function collectMetrics() {
         si.networkStats(),
         si.time(),
         si.graphics(),
-        getGpuInfo()
+        getGpuInfo(),
+        si.osInfo()
     ]);
 
     const disk = fs.length ? fs[0] : {};
@@ -137,7 +139,8 @@ async function collectMetrics() {
         },
 
         system: {
-            uptime: time.uptime
+            uptime: time.uptime,
+            os: `${osInfo.distro} ${osInfo.release}`
         }
     };
 }
