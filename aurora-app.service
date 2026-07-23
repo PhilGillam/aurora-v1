@@ -5,7 +5,6 @@ Wants=aurora-metrics.service
 
 [Service]
 Type=simple
-User=pcrm
 WorkingDirectory=/projects/aurora-v1
 Environment=DISPLAY=:0.1
 Environment=HYTE_OUTPUT=DP-0

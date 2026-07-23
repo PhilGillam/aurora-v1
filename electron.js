@@ -2,15 +2,26 @@ const {
     app,
     BrowserWindow,
     screen,
-    powerSaveBlocker
+    powerSaveBlocker,
+    crashReporter
 } = require('electron');
 
 const path = require('path');
 const { execSync } = require('child_process');
 
+let mainWindow = null;
+
 app.commandLine.appendSwitch(
     'force-device-scale-factor',
     '1'
+);
+
+app.commandLine.appendSwitch(
+    'disable-renderer-backgrounding'
+);
+
+app.commandLine.appendSwitch(
+    'disable-background-timer-throttling'
 );
 
 // NVIDIA driver on this machine is mismatched, so Electron's GPU process fails.
@@ -42,6 +53,29 @@ function runXrandr(args) {
         console.error('xrandr failed:', err.message);
         return null;
     }
+}
+
+
+function runX11Command(cmd) {
+    try {
+        return execSync(
+            cmd,
+            {
+                encoding: 'utf8',
+                timeout: 3000,
+                env: { ...process.env, DISPLAY: process.env.DISPLAY || ':0' }
+            }
+        );
+    } catch (err) {
+        console.error(cmd + ' failed:', err.message);
+        return null;
+    }
+}
+
+
+function disableScreensaver() {
+    runX11Command('xset s off -dpms');
+    runX11Command('xset s noblank');
 }
 
 
@@ -184,6 +218,15 @@ function getHyteDisplay() {
 }
 
 
+function repositionWindow() {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const hyte = getHyteDisplay();
+    if (hyte) {
+        mainWindow.setBounds(hyte);
+    }
+}
+
+
 function createWindow() {
 
     const hyte = getHyteDisplay();
@@ -219,6 +262,8 @@ function createWindow() {
 
     });
 
+    mainWindow = win;
+
 
 
     win.loadFile(
@@ -230,6 +275,49 @@ function createWindow() {
     );
 
 
+    win.webContents.on('did-fail-load', () => {
+        console.error('Dashboard failed to load; retrying');
+        setTimeout(() => {
+            if (!win.isDestroyed()) {
+                win.webContents.reload();
+            }
+        }, 1000);
+    });
+
+    win.webContents.on('render-process-gone', (event, details) => {
+        console.error('Renderer process gone:', details);
+        if (!win.isDestroyed()) {
+            win.destroy();
+        }
+        mainWindow = null;
+        app.relaunch();
+        app.quit();
+    });
+
+    let unresponsiveTimer = null;
+    win.on('unresponsive', () => {
+        console.error('Window became unresponsive');
+        unresponsiveTimer = setTimeout(() => {
+            console.error('Reloading due to unresponsiveness');
+            if (!win.isDestroyed()) {
+                win.webContents.reloadIgnoringCache();
+            }
+        }, 15000);
+    });
+
+    win.on('responsive', () => {
+        if (unresponsiveTimer) {
+            clearTimeout(unresponsiveTimer);
+            unresponsiveTimer = null;
+            console.log('Window responsive again');
+        }
+    });
+
+    screen.on('display-metrics-changed', repositionWindow);
+    screen.on('display-added', repositionWindow);
+    screen.on('display-removed', repositionWindow);
+
+
 
     // Prevent display sleep/screensaver
     powerBlockerId =
@@ -237,9 +325,14 @@ function createWindow() {
             'prevent-display-sleep'
         );
 
+    disableScreensaver();
+    setInterval(disableScreensaver, 15 * 60 * 1000);
+
 
 
     win.on('closed',()=>{
+
+        mainWindow = null;
 
         if (
             powerBlockerId &&
@@ -255,6 +348,16 @@ function createWindow() {
     });
 
 }
+
+
+app.on('child-process-gone', (event, details) => {
+    console.error('Child process gone:', details);
+});
+
+crashReporter.start({
+    submitURL: '',
+    uploadToServer: false
+});
 
 
 app.whenReady()

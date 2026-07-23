@@ -558,6 +558,11 @@ ws.onerror = err => {
 const tubesCanvas = document.getElementById("tubes");
 
 if (tubesCanvas) {
+    tubesCanvas.addEventListener("webglcontextlost", () => {
+        console.error("WebGL context lost; reloading page");
+        setTimeout(() => location.reload(), 1000);
+    });
+
     import("https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js")
         .then(mod => {
             const TubesCursor = mod.default;
